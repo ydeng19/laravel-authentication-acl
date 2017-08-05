@@ -7,6 +7,7 @@ use LaravelAcl\Library\Exceptions\JacopoExceptionsInterface;
 use LaravelAcl\Authentication\Services\ReminderService;
 use Regulus\ActivityLog\Activity;
 
+
 class AuthController extends Controller {
 
     protected $authenticator;
@@ -71,6 +72,7 @@ class AuthController extends Controller {
 
 
         return Redirect::to('/myworkspace'); //->with('global',\Cas::getCurrentUser());
+
     }
 
     public function getAdminLogin()
@@ -190,6 +192,7 @@ class AuthController extends Controller {
         try
         {
             $this->reminder->reset($email, $token, $password);
+
             $ds = ldap_connect("10.2.11.94",389)or die("Could not connect to LDAP server.");
             ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
             if ($ds) {

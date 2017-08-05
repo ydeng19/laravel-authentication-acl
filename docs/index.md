@@ -34,7 +34,7 @@ To install authentication follow this steps:
   
       __For Laravel version 5.4:__
 
-```
+      ```
       "require": {
         ...
         "jacopo/laravel-authentication-acl": "1.4.*"

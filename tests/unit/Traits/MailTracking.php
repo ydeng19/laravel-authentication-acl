@@ -2,7 +2,8 @@
 
 use Swift_Events_EventListener;
 use Swift_Message;
-use Mail;
+
+
 
 trait MailTracking
 {
@@ -18,7 +19,7 @@ trait MailTracking
    */
   public function setUpMailTracking()
   {
-    Mail::getSwiftMailer()
+    app()['mailer']->getSwiftMailer()
       ->registerPlugin(new TestingMailEventListener($this));
   }
 

@@ -12,7 +12,8 @@ a fully featured admin panel with an ACL using Laravel framework.
 
 You can see the full documentation and usage [here](docs/index.md)
 
-####Main features:
+
+#### Main features:
  - User authentication and signup
  - Configurable email confirmation
  - Configurable captcha integration
@@ -41,8 +42,8 @@ You can see the full documentation and usage [here](docs/index.md)
 ### Please support this project
 Please support the project development, even a small donation can help the life of this project!
 
-<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SZKN8MCQACLSC" target="_blank"><img src="https://www.paypalobjects.com/it_IT/IT/i/btn/btn_donate_LG.gif"></a>
+https://www.paypal.me/jacopobeschi" target="_blank"><img src="https://www.paypalobjects.com/it_IT/IT/i/btn/btn_donate_LG.gif"></a>
 
-####Interested in some new feature?
+#### Interested in some new feature?
 There's something you like to see in this package?
 Contact me and i'll do my best to implement that in next releases.
