@@ -1,7 +1,8 @@
 <?php namespace LaravelAcl\Authentication\Controllers;
 
 use Illuminate\Http\Request;
-use Sentry, Redirect, App, Config,View;
+use Xavrsl\Cas\Facades\Cas;
+use Sentry, Redirect, App, Config, View;
 use LaravelAcl\Authentication\Validators\ReminderValidator;
 use LaravelAcl\Library\Exceptions\JacopoExceptionsInterface;
 use LaravelAcl\Authentication\Services\ReminderService;
@@ -127,9 +128,9 @@ class AuthController extends Controller {
      */
     public function getLogout()
     {
-        $this->cloudRes->suspendVMs();
+        //$this->cloudRes->suspendVMs();
         $this->authenticator->logout();
-        if (\Cas::isAuthenticated()) {
+        if (Cas::isAuthenticated()) {
 //            Activity::log(['contentType' => 'User',
 //                'action' => 'Log Out',
 //                'description' => 'User logout',
@@ -137,7 +138,7 @@ class AuthController extends Controller {
 //                'userEmail' => \Cas::getCurrentUser()
 //            ]);
         }
-        \Cas::logout();
+        Cas::logout();
         return redirect('/');
     }
 
