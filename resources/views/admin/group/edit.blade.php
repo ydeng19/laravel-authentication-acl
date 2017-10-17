@@ -45,6 +45,14 @@ Admin area: edit group
                         @include('laravel-authentication-acl::admin.group.perm')
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-6 col-xs-12">
+                        <h4>Group User List</h4>
+                    </div>
+                    <div class="col-md-6 col-xs-12">
+                        <h4>Add Group User</h4>
+                    </div>
+                </div>
            </div>
         </div>
     </div>

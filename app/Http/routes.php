@@ -19,11 +19,11 @@ Route::group(['middleware' => ['web']], function ()
             "uses" => 'LaravelAcl\Authentication\Controllers\AuthController@getAdminLogin'
     ]);
     Route::get('/login', [
-            "as"   => "user-login",
+            "as"   => "user.login",
             "uses" => 'LaravelAcl\Authentication\Controllers\AuthController@getClientLogin'
     ]);
     Route::get('/user/logout', [
-            "as"   => "user-logout",
+            "as"   => "user.logout",
             "uses" => 'LaravelAcl\Authentication\Controllers\AuthController@getLogout'
     ]);
     Route::post('/user/login', [
