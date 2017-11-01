@@ -6,7 +6,7 @@ use Sentry, Redirect, App, Config, View;
 use LaravelAcl\Authentication\Validators\ReminderValidator;
 use LaravelAcl\Library\Exceptions\JacopoExceptionsInterface;
 use LaravelAcl\Authentication\Services\ReminderService;
-use Regulus\ActivityLog\Activity;
+use Regulus\ActivityLog\Models\Activity;
 
 
 class AuthController extends Controller {
@@ -14,6 +14,11 @@ class AuthController extends Controller {
     protected $authenticator;
     protected $reminder;
     protected $reminder_validator;
+    protected $ldap_server = '10.2.11.94';
+    protected $ldap_port = '389';
+    protected $ldap_bind_rdn_admin = 'cn=admin,dc=vlab,dc=asu,dc=edu';
+    protected $ldap_users_base_dn = 'ou=Users,dc=vlab,dc=asu,dc=edu';
+    protected $ldap_bind_pass = 'CloudServer';
 
     public function __construct(ReminderService $reminder, ReminderValidator $reminder_validator)
     {
@@ -26,25 +31,24 @@ class AuthController extends Controller {
     {
 //        return view('laravel-authentication-acl::client.auth.login');
         //return View::make('laravel-authentication-acl::client.auth.login');
-        \Cas::authenticate();
+        Cas::authenticate();
 
         // The following codes will not be run, since the login process is superseded by CAS.
-        $user = \Cas::getCurrentUser();
+        $user = Cas::getCurrentUser();
 
         // connect
-        $ds = ldap_connect("10.2.11.94", 389) or die("Could not connect to LDAP server.");
+        $ds = ldap_connect($this->ldap_server, $this->ldap_port) or die("Could not connect to LDAP server.");
         ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
 
         if ($ds) {
 
-            ldap_bind($ds, "cn=admin,dc=vlab,dc=asu,dc=edu", "CloudServer");
+            ldap_bind($ds, $this->ldap_bind_rdn_admin, $this->ldap_bind_pass);
 
-            $result = ldap_search($ds, "ou=Users,dc=vlab,dc=asu,dc=edu", "(mail=$user)") or die ("Error in search query: " . ldap_error($ds));
+            $result = ldap_search($ds, $this->ldap_users_base_dn, "(mail=$user)") or die ("Error in search query: " . ldap_error($ds));
             $data = ldap_get_entries($ds, $result);
         }
         ldap_close($ds);
         $password = $data[0]["userpassword"][0];
-
 
         try
         {
@@ -53,21 +57,20 @@ class AuthController extends Controller {
                 "password" => $password,
             ), true);
 
-
-//            Activity::log(['contentType' => 'User',
-//                'action' => 'Log In',
-//                'description' => 'User login',
-//                'details' => 'User '.\Cas::getCurrentUser().' logged in from CAS.',
-//                'userEmail' => \Cas::getCurrentUser()
-//            ]);
+            Activity::log(['contentType' => 'User',
+                'contentId' => Sentry::getUser()->getId(),
+                'action' => 'Log In',
+                'description' => 'User login',
+                'details' => 'User ' . Cas::getCurrentUser().' logged in from CAS.',
+                'userEmail' => Cas::getCurrentUser()
+            ]);
         }
         catch(JacopoExceptionsInterface $e)
         {
             $errors = $this->authenticator->getErrors();
             //return Redirect::action('Jacopo\Authentication\Controllers\AuthController@getClientLogin')->withInput()->withErrors($errors);
-            \Cas::logout();
+            Cas::logout();
             return View::make('laravel-authentication-acl::client.auth.login-email-activation');
-
         }
 
 
@@ -129,15 +132,16 @@ class AuthController extends Controller {
     public function getLogout()
     {
         //$this->cloudRes->suspendVMs();
-        $this->authenticator->logout();
         if (Cas::isAuthenticated()) {
-//            Activity::log(['contentType' => 'User',
-//                'action' => 'Log Out',
-//                'description' => 'User logout',
-//                'details' => 'User ' . \Cas::getCurrentUser() . ' logged out.',
-//                'userEmail' => \Cas::getCurrentUser()
-//            ]);
+            Activity::log(['contentType' => 'User',
+                'contentId' => Sentry::getUser()->getId(),
+                'action' => 'Log Out',
+                'description' => 'User logout',
+                'details' => 'User ' . Cas::getCurrentUser() . ' logged out.',
+                'userEmail' => Cas::getCurrentUser()
+            ]);
         }
+        $this->authenticator->logout();
         Cas::logout();
         return redirect('/');
     }
@@ -194,12 +198,12 @@ class AuthController extends Controller {
         {
             $this->reminder->reset($email, $token, $password);
 
-            $ds = ldap_connect("10.2.11.94",389)or die("Could not connect to LDAP server.");
+            $ds = ldap_connect($this->ldap_server,$this->ldap_port) or die("Could not connect to LDAP server.");
             ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
             if ($ds) {
                 //if connection success
                 //bind to LDAP use admin user
-                $r = ldap_bind($ds,"cn=admin,dc=vlab,dc=asu,dc=edu","CloudServer");
+                $r = ldap_bind($ds, $this->ldap_bind_rdn_admin, $this->ldap_bind_pass);
 
                 //read from input
 
@@ -207,7 +211,7 @@ class AuthController extends Controller {
 
 
                 //write to LDAP with a new entry name = email
-                $r = ldap_modify($ds,"cn=".$email.",ou=Users,dc=vlab,dc=asu,dc=edu",$info);
+                $r = ldap_modify($ds,"cn=" . $email . "," . $this->ldap_users_base_dn, $info);
             }
 
             //Close connection
@@ -223,12 +227,12 @@ class AuthController extends Controller {
 
     }
 
-    public function postChangePassword2()
+    public function postChangePassword2(Request $request)
     {
-        $email = Input::get('email');
-        $cur_password = Input::get('cur_pass');
-        $token = Input::get('token');
-        $password = Input::get('new_pass');
+        $email = $request->get('email');
+        $cur_password = $request->get('cur_pass');
+        $token = $request->get('token');
+        $password = $request->get('new_pass');
 
 //        if (! $this->reminder_validator->validate(Input::all()) )
 //        {
@@ -238,20 +242,20 @@ class AuthController extends Controller {
         try
         {
             $this->reminder->reset($email, $token, $password);
-            $ds = ldap_connect("10.2.11.94",389)or die("Could not connect to LDAP server.");
+            $ds = ldap_connect($this->ldap_server,$this->ldap_port) or die("Could not connect to LDAP server.");
             ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
             if ($ds) {
                 //if connection success
                 //bind to LDAP use admin user
-                $r = ldap_bind($ds,"cn=admin,dc=vlab,dc=asu,dc=edu","CloudServer");
+                $r = ldap_bind($ds,$this->ldap_bind_rdn_admin, $this->ldap_bind_pass);
 
-                $r = ldap_compare($ds, "cn=".$email.",ou=Users,dc=vlab,dc=asu,dc=edu", "userPassword", $cur_password);
+                $r = ldap_compare($ds, "cn=" . $email . "," . $this->ldap_users_base_dn, "userPassword", $cur_password);
 
                 if ($r==true) {
                     //read from input
                     $info["userPassword"] = $password;
                     //write to LDAP with a new entry name = email
-                    $r = ldap_modify($ds, "cn=" . $email . ",ou=Users,dc=vlab,dc=asu,dc=edu", $info);
+                    $r = ldap_modify($ds, "cn=" . $email . $this->ldap_users_base_dn, $info);
                 } else {
                     ldap_close($ds);
                     return "update failed: current password wrong";
