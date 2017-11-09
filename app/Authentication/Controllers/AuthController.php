@@ -7,7 +7,7 @@ use LaravelAcl\Authentication\Validators\ReminderValidator;
 use LaravelAcl\Library\Exceptions\JacopoExceptionsInterface;
 use LaravelAcl\Authentication\Services\ReminderService;
 use Regulus\ActivityLog\Models\Activity;
-
+use Adldap\Laravel\Facades\Adldap;
 
 class AuthController extends Controller {
 
@@ -36,19 +36,20 @@ class AuthController extends Controller {
         // The following codes will not be run, since the login process is superseded by CAS.
         $user = Cas::getCurrentUser();
 
+        $password = Adldap::search()->where('cn', '=', $user)->get()[0]->userpassword[0];
         // connect
-        $ds = ldap_connect($this->ldap_server, $this->ldap_port) or die("Could not connect to LDAP server.");
-        ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
-
-        if ($ds) {
-
-            ldap_bind($ds, $this->ldap_bind_rdn_admin, $this->ldap_bind_pass);
-
-            $result = ldap_search($ds, $this->ldap_users_base_dn, "(mail=$user)") or die ("Error in search query: " . ldap_error($ds));
-            $data = ldap_get_entries($ds, $result);
-        }
-        ldap_close($ds);
-        $password = $data[0]["userpassword"][0];
+//        $ds = ldap_connect($this->ldap_server, $this->ldap_port) or die("Could not connect to LDAP server.");
+//        ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
+//
+//        if ($ds) {
+//
+//            ldap_bind($ds, $this->ldap_bind_rdn_admin, $this->ldap_bind_pass);
+//
+//            $result = ldap_search($ds, $this->ldap_users_base_dn, "(mail=$user)") or die ("Error in search query: " . ldap_error($ds));
+//            $data = ldap_get_entries($ds, $result);
+//        }
+//        ldap_close($ds);
+//        $password = $data[0]["userpassword"][0];
 
         try
         {
