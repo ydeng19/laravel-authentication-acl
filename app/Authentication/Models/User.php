@@ -7,6 +7,7 @@
 use Cartalyst\Sentry\Users\Eloquent\User as CartaUser;
 use Cartalyst\Sentry\Users\UserExistsException;
 use Cartalyst\Sentry\Users\LoginRequiredException;
+use LaravelAcl\Authentication\Models\Group;
 
 class User extends CartaUser
 {
@@ -45,4 +46,11 @@ class User extends CartaUser
     {
         return $this->hasMany('LaravelAcl\Authentication\Models\UserProfile');
     }
+
+    public function group()
+    {
+        return $this->belongsToMany('LaravelAcl\Authentication\Models\Group','users_groups','user_id','group_id');
+    }
+
+
 } 

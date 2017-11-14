@@ -192,6 +192,21 @@ Route::group(['middleware' => ['web']], function ()
                 'uses' => 'LaravelAcl\Authentication\Controllers\GroupController@editPermission'
         ]);
 
+        Route::post('/admin/groups/editmembers', [
+            'as'   => 'groups.edit.members',
+            'uses' => 'LaravelAcl\Authentication\Controllers\GroupController@editmembers'
+        ]);
+
+        /*Route::get('/admin/groups/edit', [
+            'as'   => 'groups.edit',
+            'uses' => 'LaravelAcl\Authentication\Controllers\GroupController@getGroupMembers'
+        ]);
+        Route::get('/admin/groups/edit', [
+            'as'   => 'groups.edit',
+            'uses' => 'LaravelAcl\Authentication\Controllers\GroupController@getAllMembers'
+        ]);
+        */
+
         /**
          * permissions
          */
