@@ -146,7 +146,7 @@ class GroupController extends Controller
         {
             foreach($input3 as $data){
                 $user = User::find($data);
-                //Log::info($user);
+                Log::info($user);
                 $user->group()->detach($id);
             }
         }
