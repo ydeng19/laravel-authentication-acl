@@ -61,10 +61,17 @@ class GroupController extends Controller
         }
         $presenter = new GroupPresenter($obj);
 
-        $groupmem = Group::find($request->get('id'));
-        $members = $groupmem->user()->get();
-        $users = User::all();
-        return View::make('laravel-authentication-acl::admin.group.edit')->with(["group" => $obj, "presenter" => $presenter,"users" => $users,"groupmem" => $members]);
+        if($request->get('id') == null)
+        {
+            return View::make('laravel-authentication-acl::admin.group.edit')->with(["group" => $obj, "presenter" => $presenter]);
+        }
+        else
+            {
+                $groupmem = Group::find($request->get('id'));
+                $members = $groupmem->user()->get();
+                $users = User::all();
+                return View::make('laravel-authentication-acl::admin.group.edit')->with(["group" => $obj, "presenter" => $presenter,"users" => $users,"groupmem" => $members]);
+            }
     }
 
     public function postEditGroup(Request $request)
