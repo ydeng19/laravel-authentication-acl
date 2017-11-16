@@ -70,17 +70,31 @@ class GroupController extends Controller
                 $groupmem = Group::find($request->get('id'));
                 $members = $groupmem->user()->get();
                 $users = User::all();
-                return View::make('laravel-authentication-acl::admin.group.edit')->with(["group" => $obj, "presenter" => $presenter,"users" => $users,"groupmem" => $members]);
+                return View::make('laravel-authentication-acl::admin.group.edit')->with(["group" => $obj, "presenter" => $presenter,"users" => $users,"groupmem" => $members,"groupinfo" => $groupmem]);
             }
     }
 
     public function postEditGroup(Request $request)
     {
             $id = $request->get('id');
-
+            $user_id = $request->get('user_id');
             try
             {
                 $obj = $this->f->process($request->all());
+                $userObject = User::find($user_id);
+                //Adding owner_id to group created
+                $obj->owner_id = $userObject->id;
+                $obj->save();
+                //Updating pivot table and adding group owner association with group created
+                $userObject->group()->attach($obj->id);
+                $userObject->save();
+                Log::info('Group Object');
+                Log::info($obj);
+                Log::info('User Object');
+                Log::info($userObject);
+                Log::info('Request Object');
+                Log::info($request->all());
+
             }
             catch(JacopoExceptionsInterface $e)
             {
@@ -145,6 +159,7 @@ class GroupController extends Controller
                 $user = User::find($data);
                 //Log::info($user);
                 $user->group()->attach($id);
+                $user->save();
             }
 
         }
@@ -155,6 +170,7 @@ class GroupController extends Controller
                 $user = User::find($data);
                 Log::info($user);
                 $user->group()->detach($id);
+                $user->save();
             }
         }
 
