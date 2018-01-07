@@ -74,9 +74,7 @@ class AuthController extends Controller {
             return View::make('laravel-authentication-acl::client.auth.login-email-activation');
         }
 
-
-
-        return Redirect::to('/myworkspace'); //->with('global',\Cas::getCurrentUser());
+        return Redirect::to('/myworkspace')->with('user_id', Sentry::getUser()->getId());
 
     }
 
