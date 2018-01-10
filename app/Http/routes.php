@@ -18,7 +18,7 @@ Route::group(['middleware' => ['web']], function ()
             "as"   => "user.admin.login",
             "uses" => 'LaravelAcl\Authentication\Controllers\AuthController@getAdminLogin'
     ]);
-    Route::get('/login', [
+    Route::get('/user/login', [
             "as"   => "user.login",
             "uses" => 'LaravelAcl\Authentication\Controllers\AuthController@getClientLogin'
     ]);
@@ -30,7 +30,7 @@ Route::group(['middleware' => ['web']], function ()
             "uses" => 'LaravelAcl\Authentication\Controllers\AuthController@postAdminLogin',
             "as"   => "user.login.process"
     ]);
-    Route::post('/login', [
+    Route::post('/user/login', [
             "uses" => 'LaravelAcl\Authentication\Controllers\AuthController@postClientLogin',
             "as"   => "user.login"
     ]);
