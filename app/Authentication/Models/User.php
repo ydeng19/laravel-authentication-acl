@@ -52,5 +52,24 @@ class User extends CartaUser
         return $this->belongsToMany('LaravelAcl\Authentication\Models\Group','users_groups','user_id','group_id');
     }
 
+    /**
+     * Override the SentryUser getPersistCode method.
+     * Add by James @ 1/13/2018 to allow multiple login sessions from different computer for the same user
+     */
+    public function getPersistCode()
+    {
+        if (!$this->persist_code)
+        {
+            $this->persist_code = $this->getRandomString();
+
+            // Our code got hashed
+            $persistCode = $this->persist_code;
+
+            $this->save();
+
+            return $persistCode;
+        }
+        return $this->persist_code;
+    }
 
 } 
