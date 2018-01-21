@@ -10,7 +10,7 @@ use LaravelAcl\Authentication\Presenters\UserProfilePresenter;
 
 class UserProfile extends BaseModel
 {
-    protected $table = "user_profile";
+    protected $table = "user_profiles";
 
     protected $fillable = [
         'user_id',

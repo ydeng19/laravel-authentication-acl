@@ -197,24 +197,27 @@ class AuthController extends Controller {
         {
             $this->reminder->reset($email, $token, $password);
 
-            $ds = ldap_connect($this->ldap_server,$this->ldap_port) or die("Could not connect to LDAP server.");
-            ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
-            if ($ds) {
-                //if connection success
-                //bind to LDAP use admin user
-                $r = ldap_bind($ds, $this->ldap_bind_rdn_admin, $this->ldap_bind_pass);
+            $user = Adldap::search()->where('cn', '=', $email)->get();
+            $user->update(['userPassword' => $password]);
 
-                //read from input
-
-                $info["userPassword"] = $password;
-
-
-                //write to LDAP with a new entry name = email
-                $r = ldap_modify($ds,"cn=" . $email . "," . $this->ldap_users_base_dn, $info);
-            }
-
-            //Close connection
-            ldap_close($ds);
+//            $ds = ldap_connect($this->ldap_server,$this->ldap_port) or die("Could not connect to LDAP server.");
+//            ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
+//            if ($ds) {
+//                //if connection success
+//                //bind to LDAP use admin user
+//                $r = ldap_bind($ds, $this->ldap_bind_rdn_admin, $this->ldap_bind_pass);
+//
+//                //read from input
+//
+//                $info["userPassword"] = $password;
+//
+//
+//                //write to LDAP with a new entry name = email
+//                $r = ldap_modify($ds,"cn=" . $email . "," . $this->ldap_users_base_dn, $info);
+//            }
+//
+//            //Close connection
+//            ldap_close($ds);
         }
         catch(JacopoExceptionsInterface $e)
         {
@@ -241,28 +244,35 @@ class AuthController extends Controller {
         try
         {
             $this->reminder->reset($email, $token, $password);
-            $ds = ldap_connect($this->ldap_server,$this->ldap_port) or die("Could not connect to LDAP server.");
-            ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
-            if ($ds) {
-                //if connection success
-                //bind to LDAP use admin user
-                $r = ldap_bind($ds,$this->ldap_bind_rdn_admin, $this->ldap_bind_pass);
-
-                $r = ldap_compare($ds, "cn=" . $email . "," . $this->ldap_users_base_dn, "userPassword", $cur_password);
-
-                if ($r==true) {
-                    //read from input
-                    $info["userPassword"] = $password;
-                    //write to LDAP with a new entry name = email
-                    $r = ldap_modify($ds, "cn=" . $email . $this->ldap_users_base_dn, $info);
-                } else {
-                    ldap_close($ds);
-                    return "update failed: current password wrong";
-                }
+            $user = Adldap::search()->where('cn', '=', $email)->get();
+            if ($cur_password !== $user->first()->userpassword[0]) {
+                return "update failed: current password wrong";
             }
-
-            //Close connection
-            ldap_close($ds);
+            else {
+                $user->update(['userPassword' => $password]);
+            }
+//            $ds = ldap_connect($this->ldap_server,$this->ldap_port) or die("Could not connect to LDAP server.");
+//            ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
+//            if ($ds) {
+//                //if connection success
+//                //bind to LDAP use admin user
+//                $r = ldap_bind($ds,$this->ldap_bind_rdn_admin, $this->ldap_bind_pass);
+//
+//                $r = ldap_compare($ds, "cn=" . $email . "," . $this->ldap_users_base_dn, "userPassword", $cur_password);
+//
+//                if ($r==true) {
+//                    //read from input
+//                    $info["userPassword"] = $password;
+//                    //write to LDAP with a new entry name = email
+//                    $r = ldap_modify($ds, "cn=" . $email . $this->ldap_users_base_dn, $info);
+//                } else {
+//                    ldap_close($ds);
+//                    return "update failed: current password wrong";
+//                }
+//            }
+//
+//            //Close connection
+//            ldap_close($ds);
         }
         catch(JacopoExceptionsInterface $e)
         {
