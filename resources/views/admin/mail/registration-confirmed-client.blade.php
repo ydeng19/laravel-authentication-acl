@@ -10,7 +10,7 @@
 <div>
     <h3>Dear: {!! $body['first_name'] !!}</h3>
     <strong>You account has been created.</strong> You can now login to the website using the
-    <a href="{!! URL::to('/login') !!}">Following link</a>.
+    <a href="{!! URL::to('/user/login') !!}">Following link</a>.
     <br/>
     <strong>Please find your account details below: </strong>
     <ul>
