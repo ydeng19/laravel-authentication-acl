@@ -112,12 +112,10 @@ class UserRegisterService
     protected function saveDbData(array $input)
     {
         DbHelper::startTransaction();
-        try
-        {
+        try {
             $user = $this->user_repository->create($input);
             $this->profile_repository->create($this->createProfileInput($input, $user));
-        } catch(UserExistsException $e)
-        {
+        } catch (UserExistsException $e) {
             DbHelper::rollback();
             $this->errors = new MessageBag(["model" => "User already exists."]);
             throw new UserExistsException;
@@ -127,7 +125,7 @@ class UserRegisterService
         // write to LDAP
 
         $info = ['givenName' => $input['first_name'], 'ou' => $input['last_name'], 'sn' => $input['email'],
-                 'userPassword' => $input['password'], 'c' => $input['country'], 'o' => $input['institute']];
+            'userPassword' => $input['password'], 'o' => $input['institute']];
 
         $ldap_user = Adldap::search()->where('cn', '=', $input['email'])->get()->first();
         if (!$ldap_user) {
@@ -169,25 +167,26 @@ class UserRegisterService
 //
 //                $r = ldap_add($ds, "cn=" . $cn . ",ou=Users,dc=vlab,dc=asu,dc=edu", $info);
 //            }
-//            else if ($res == 1){
-//                //else{
-//                $info["userPassword"] = $input['password'];
-//                $info["sn"] = $input['email'];
-//                $info["objectClass"][0] = "inetOrgPerson";
-//                $info["objectClass"][1] = "extensibleObject";
-//                $info["c"]=$input['Country'];
-//                $info["o"]=$input['Institute'];
-//                $info["ou"] = $input['last_name'];
-//                $info["givenName"] = $input['first_name'];
-//                //write to LDAP with a new entry name = email
-//                $r = ldap_modify($ds,"cn=".$cn.",ou=Users,dc=vlab,dc=asu,dc=edu",$info);
-//
-//            }
-//        }
-
-        //Close connection
-        //ldap_close($ds);
-
+        else if ($ldap_user) {
+            //else{
+            $ds = ldap_connect("10.2.11.94", 389) or die("Could not connect to LDAP server.");
+            ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
+            if ($ds) {
+//            //if connection success
+//            //bind to LDAP use admin user
+                $r = ldap_bind($ds, "cn=admin,dc=vlab,dc=asu,dc=edu", "CloudServer");
+                $info["userPassword"] = $input['password'];
+                $info["sn"] = $input['email'];
+                $info["objectClass"][0] = "inetOrgPerson";
+                $info["objectClass"][1] = "extensibleObject";
+                $info["o"] = $input['Institute'];
+                $info["ou"] = $input['last_name'];
+                $info["givenName"] = $input['first_name'];
+                //write to LDAP with a new entry name = email
+                $r = ldap_modify($ds, "cn=" . $cn . ",ou=Users,dc=vlab,dc=asu,dc=edu", $info);
+                ldap_close($ds);
+            }
+        }
         return $user;
     }
 
