@@ -12,7 +12,7 @@
     <h3>Dear: {!! $body['email'] !!}</h3>
     <strong>Your email has been confirmed successfully.</strong>
     You can now login to the website using the
-    <a href="{!! URL::to('/login') !!}">Following link</a>.
+    <a href="{!! URL::to('/user/login') !!}">Following link</a>.
 </div>
 </body>
 </html>

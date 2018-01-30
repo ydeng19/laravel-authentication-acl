@@ -82,8 +82,8 @@ class UserRegisterService
 //        Event::fire('service.registering', [$input]);
 //        $this->validateInput($input);
 
-        //$input['activated'] = $this->getDefaultActivatedState();
-        //$user = $this->saveDbData($input);
+        $input['activated'] = $this->getDefaultActivatedState();
+        $user = $this->saveDbData($input);
 
         $this->sendRegistrationMailToClient2($input);
 
