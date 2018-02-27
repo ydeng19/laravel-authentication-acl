@@ -8,6 +8,7 @@ use LaravelAcl\Library\Exceptions\JacopoExceptionsInterface;
 use LaravelAcl\Authentication\Services\ReminderService;
 use Regulus\ActivityLog\Models\Activity;
 use Adldap\Laravel\Facades\Adldap;
+use DB;
 
 class AuthController extends Controller {
 
@@ -27,6 +28,22 @@ class AuthController extends Controller {
         $this->reminder_validator = $reminder_validator;
     }
 
+    function hashpassword($string)
+    {
+        // Usually caused by an old PHP environment, see
+        // https://github.com/cartalyst/sentry/issues/98#issuecomment-12974603
+        // and https://github.com/ircmaxell/password_compat/issues/10
+        if (!function_exists('password_hash')) {
+            throw new \RuntimeException('The function password_hash() does not exist, your PHP environment is probably incompatible. Try running [vendor/ircmaxell/password-compat/version-test.php] to check compatibility or use an alternative hashing strategy.');
+        }
+
+        if (($hash = password_hash($string, PASSWORD_DEFAULT)) === false) {
+            throw new \RuntimeException('Error generating hash from string, your PHP environment is probably incompatible. Try running [vendor/ircmaxell/password-compat/version-test.php] to check compatibility or use an alternative hashing strategy.');
+        }
+
+        return $hash;
+    }
+
     public function getClientLogin()
     {
 //        return view('laravel-authentication-acl::client.auth.login');
@@ -37,6 +54,13 @@ class AuthController extends Controller {
         $user = Cas::getCurrentUser();
 
         $password = Adldap::search()->where('cn', '=', $user)->get()[0]->userpassword[0];
+        $hash= $this->hashpassword($password);
+
+        $sql = "UPDATE users SET password='" . $hash .
+            "' WHERE email='" . $user."'";
+        //$result = $conn->query($sql);
+        $result = DB::update($sql);
+
         // connect
 //        $ds = ldap_connect($this->ldap_server, $this->ldap_port) or die("Could not connect to LDAP server.");
 //        ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
