@@ -220,9 +220,28 @@ class AuthController extends Controller {
         try
         {
             $this->reminder->reset($email, $token, $password);
+            //$oldpassword = Adldap::search()->where('cn', '=', $user)->get()[0]->userpassword[0];
+            //$user = Adldap::search()->where('cn', '=', $email)->get();
+            //$user->update(['userPassword' => $password]);
+            //$setpassword = Adldap::user()->password($email, $password,$oldpassword);
+            $ds = ldap_connect("10.2.11.94",389)or die("Could not connect to LDAP server.");
+            ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
+            if ($ds) {
+                //if connection success
+                //bind to LDAP use admin user
+                $r = ldap_bind($ds,"cn=admin,dc=vlab,dc=asu,dc=edu","CloudServer");
 
-            $user = Adldap::search()->where('cn', '=', $email)->get();
-            $user->update(['userPassword' => $password]);
+                //read from input
+
+                $info["userPassword"] = $password;
+
+
+                //write to LDAP with a new entry name = email
+                $r = ldap_modify($ds,"cn=".$email.",ou=Users,dc=vlab,dc=asu,dc=edu",$info);
+            }
+
+            //Close connection
+            ldap_close($ds);
 
 //            $ds = ldap_connect($this->ldap_server,$this->ldap_port) or die("Could not connect to LDAP server.");
 //            ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
