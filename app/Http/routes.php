@@ -78,7 +78,7 @@ Route::group(['middleware' => ['web']], function ()
             'uses' => 'LaravelAcl\Authentication\Controllers\UserController@postSignup',
             "as"   => "user.signup.process"
     ]);
-    Route::get('/user/signup', [
+    Route::get('/user/signupnew', [
             'uses' => 'LaravelAcl\Authentication\Controllers\UserController@signup',
             "as"   => "user.signup"
     ]);
