@@ -12,7 +12,7 @@
     <strong>You account has been created. However, before you can use it you need to confirm your email address first by clicking the
         <a href="{!!URL::route('user.email-confirmation', ['token' => $body['token'], 'email' => $body['email'] ] )!!}">Following link</a></strong>
     <br/>
-    <strong>Please find your account details below: </strong>
+    <strong>Once confirmed, please use account details below to login and change your password as soon as possible. </strong>
     <ul>
         <li>Username: {!!$body['email']!!}</li>
         <li>Password: {!!$body['password']!!}</li>
